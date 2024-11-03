@@ -26,3 +26,34 @@ jobs:
       
     - name: Lint HTML files
       run: htmlhint *.html
+  test:
+    runs-on: ubuntu-latest
+    needs: lint  # Pastikan langkah linting selesai sebelum menjalankan tes
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+
+    - name: Install Puppeteer
+      run: npm install puppeteer
+
+    - name: Run Tests
+      run: |
+        # Buat file test.js untuk menjalankan pengujian
+        echo "const puppeteer = require('puppeteer');" > test.js
+        echo "(async () => {" >> test.js
+        echo "  const browser = await puppeteer.launch();" >> test.js
+        echo "  const page = await browser.newPage();" >> test.js
+        echo "  await page.goto('file://' + __dirname + '/index.html');" >> test.js  # Ganti dengan nama file HTML Anda
+        echo "  const title = await page.title();" >> test.js
+        echo "  console.log('Page title is:', title);" >> test.js
+        echo "  await browser.close();" >> test.js
+        echo "})();" >> test.js
+
+        # Jalankan pengujian
+        node test.js
